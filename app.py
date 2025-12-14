@@ -79,7 +79,9 @@ trajet = st.radio(
         "Lyon → Paris",
         "Paris → Lyon",
         "Lyon → Picardie",
-        "Lyon → Lille"
+        "Lyon → Lille",
+        "Lyon → Rouen"
+
     ],
     index=0  # Lyon → Paris par défaut
 )
@@ -89,7 +91,10 @@ trajets_codes = {
     "Paris → Lyon": ("FRPLY", "FRLPD"),
     "Lyon → Picardie": ("FRLPD", "FRTHP"),
     # lille = FRLLE
-    "Lyon → Lille": ("FRLPD", "FRLLE")
+    "Lyon → Lille": ("FRLPD", "FRLLE"),
+    # rouen FRURD
+    "Lyon → Rouen": ("FRLPD", "FRURD"),
+
 }
 
 origine_code, destination_code = trajets_codes[trajet]
