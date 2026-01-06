@@ -3,6 +3,9 @@ import requests
 from datetime import datetime, timedelta
 from collections import defaultdict
 
+# -------------------- Streamlit config (DOIT ÊTRE EN PREMIER) --------------------
+st.set_page_config(page_title="TGVmax Week-ends", layout="wide")
+
 # -------------------- Fonctions utilitaires --------------------
 def parse_time(t):
     return datetime.strptime(t, "%H:%M").time()
@@ -58,8 +61,7 @@ def format_train_line(train):
     color = "#1f77b4" if train["type"] == "aller" else "#ff7f0e"
     return f"<span style='color:{color}; font-weight:bold'>{train['heure_depart']}</span>"
 
-# -------------------- Streamlit UI --------------------
-st.set_page_config(page_title="TGVmax Week-ends", layout="wide")
+# -------------------- UI --------------------
 st.title("🚄 TGVmax – Week-ends")
 
 # Dates info
@@ -69,6 +71,38 @@ st.markdown(
     f"Nous sommes le **{format_date_fr(aujd.strftime('%Y-%m-%d'))}**, "
     f"demain les trains pour le **{format_date_fr(date_plus_30.strftime('%Y-%m-%d'))}** sortiront."
 )
+
+# ----- Règles dans deux boîtes -----
+st.markdown("### Règles TGVmax")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.markdown(
+        """
+<div style="background:#e6f2ff; padding:12px; border-radius:8px">
+<b>Aller</b><br>
+Jeudi après 17h30<br>
+Vendredi avant 8h et après 17h30<br>
+Samedi toute la journée
+</div>
+""",
+        unsafe_allow_html=True
+    )
+
+with col2:
+    st.markdown(
+        """
+<div style="background:#fff0e6; padding:12px; border-radius:8px">
+<b>Retour</b><br>
+Dimanche toute la journée<br>
+Lundi avant 8h et après 17h30<br>
+Mardi avant 8h
+</div>
+""",
+        unsafe_allow_html=True
+    )
+
 
 # -------------------- Sélection du trajet --------------------
 st.markdown("### Trajet")
@@ -81,20 +115,16 @@ trajet = st.radio(
         "Lyon → Picardie",
         "Lyon → Lille",
         "Lyon → Rouen"
-
     ],
-    index=0  # Lyon → Paris par défaut
+    index=0
 )
 
 trajets_codes = {
     "Lyon → Paris": ("FRLPD", "FRPLY"),
     "Paris → Lyon": ("FRPLY", "FRLPD"),
     "Lyon → Picardie": ("FRLPD", "FRTHP"),
-    # lille = FRLLE
     "Lyon → Lille": ("FRLPD", "FRLLE"),
-    # rouen FRURD
     "Lyon → Rouen": ("FRLPD", "FRURD"),
-
 }
 
 origine_code, destination_code = trajets_codes[trajet]
@@ -107,27 +137,36 @@ with st.spinner("Récupération des trains..."):
 
     filtered_trains = []
 
-    # Allers
+    # -------- Allers --------
     for t in trains_aller:
         date_obj = datetime.strptime(t["date"], "%Y-%m-%d")
         heure = parse_time(t["heure_depart"])
         weekday = date_obj.weekday()
-        if (weekday in [3, 4] and heure >= parse_time("17:00")) or weekday == 5:
+
+        if (
+            (weekday == 3 and heure >= parse_time("17:30")) or
+            (weekday == 4 and (heure <= parse_time("08:00") or heure >= parse_time("17:30"))) or
+            (weekday == 5)
+        ):
             filtered_trains.append({**t, "type": "aller"})
 
-    # Retours
+    # -------- Retours --------
     for t in trains_retour:
         date_obj = datetime.strptime(t["date"], "%Y-%m-%d")
         heure = parse_time(t["heure_depart"])
         weekday = date_obj.weekday()
-        if weekday == 6 or (weekday == 0 and heure >= parse_time("17:00")):
+
+        if (
+            weekday == 6 or
+            (weekday == 0 and (heure <= parse_time("08:00") or heure >= parse_time("17:30"))) or
+            (weekday == 1 and heure <= parse_time("08:00"))
+        ):
             filtered_trains.append({**t, "type": "retour"})
 
     weekends = defaultdict(lambda: {"aller": [], "retour": []})
     for t in filtered_trains:
         date_obj = datetime.strptime(t["date"], "%Y-%m-%d")
-        is_return = t["type"] == "retour"
-        ref = week_end_ref(date_obj, is_return)
+        ref = week_end_ref(date_obj, t["type"] == "retour")
         weekends[ref][t["type"]].append(t)
 
 # -------------------- Affichage --------------------
@@ -142,17 +181,18 @@ for weekend, trips in sorted(weekends.items()):
             by_date = defaultdict(list)
             for t in trips["aller"]:
                 by_date[t["date"]].append(t)
+
             for date_str, trains in sorted(by_date.items()):
                 horaires = {t["heure_depart"]: t for t in trains}.values()
                 st.markdown(
-                    "<div style='background:#e6f2ff; color:#000; padding:10px; margin-bottom:6px; border-radius:6px'>"
+                    "<div style='background:#e6f2ff; padding:10px; margin-bottom:6px; border-radius:6px'>"
                     f"<b>{format_date_fr(date_str)} :</b> "
                     + ", ".join(format_train_line(t) for t in sorted(horaires, key=lambda x: x["heure_depart"]))
                     + "</div>",
                     unsafe_allow_html=True
                 )
         else:
-            st.markdown("<span style='color:#d62728'>Aucun aller disponible</span>", unsafe_allow_html=True)
+            st.markdown("❌ Aucun aller disponible")
 
     # Retours
     with col2:
@@ -161,14 +201,15 @@ for weekend, trips in sorted(weekends.items()):
             by_date = defaultdict(list)
             for t in trips["retour"]:
                 by_date[t["date"]].append(t)
+
             for date_str, trains in sorted(by_date.items()):
                 horaires = {t["heure_depart"]: t for t in trains}.values()
                 st.markdown(
-                    "<div style='background:#fff0e6; color:#000;  padding:10px; margin-bottom:6px; border-radius:6px'>"
+                    "<div style='background:#fff0e6; padding:10px; margin-bottom:6px; border-radius:6px'>"
                     f"<b>{format_date_fr(date_str)} :</b> "
                     + ", ".join(format_train_line(t) for t in sorted(horaires, key=lambda x: x["heure_depart"]))
                     + "</div>",
                     unsafe_allow_html=True
                 )
         else:
-            st.markdown("<span style='color:#d62728'>Aucun retour disponible</span>", unsafe_allow_html=True)
+            st.markdown("❌ Aucun retour disponible")
