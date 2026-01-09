@@ -190,7 +190,7 @@ for weekend, trips in sorted(weekends.items()):
                 horaires = {t["heure_depart"]: t for t in trains}.values()
                 st.markdown(
                     "<div style='background:#e6f2ff; padding:10px; margin-bottom:6px; border-radius:6px'>"
-                    f"<b>{format_date_fr(date_str)} :</b> "
+                    f"<b style='color:#000000'>{format_date_fr(date_str)} :</b> "
                     + ", ".join(format_train_line(t) for t in sorted(horaires, key=lambda x: x["heure_depart"]))
                     + "</div>",
                     unsafe_allow_html=True
@@ -210,7 +210,7 @@ for weekend, trips in sorted(weekends.items()):
                 horaires = {t["heure_depart"]: t for t in trains}.values()
                 st.markdown(
                     "<div style='background:#fff0e6; padding:10px; margin-bottom:6px; border-radius:6px'>"
-                    f"<b>{format_date_fr(date_str)} :</b> "
+                    f"<b style='color:#000000'>{format_date_fr(date_str)} :</b> "
                     + ", ".join(format_train_line(t) for t in sorted(horaires, key=lambda x: x["heure_depart"]))
                     + "</div>",
                     unsafe_allow_html=True
