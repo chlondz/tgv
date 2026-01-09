@@ -23,15 +23,19 @@ def format_date_fr(date_str):
 def week_end_ref(date_obj, is_return=False):
     weekday = date_obj.weekday()
     if not is_return:
-        if weekday in [3, 4]:
+        # Allers
+        if weekday in [3, 4]:  # jeudi, vendredi
             return date_obj + timedelta(days=(5 - weekday))
-        elif weekday == 5:
+        elif weekday == 5:  # samedi
             return date_obj
     else:
-        if weekday == 6:
-            return date_obj - timedelta(days=1)
-        elif weekday == 0:
+        # Retours
+        if weekday == 6:  # dimanche
+            return date_obj - timedelta(days=1)  # rattaché au samedi ?
+        elif weekday == 0:  # lundi
             return date_obj - timedelta(days=2)
+        elif weekday == 1:  # mardi
+            return date_obj - timedelta(days=3)  # rattaché au dimanche précédent
     return date_obj
 
 def fetch_trains(origine, destination):
