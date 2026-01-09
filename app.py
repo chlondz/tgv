@@ -84,7 +84,7 @@ col1, col2 = st.columns(2)
 with col1:
     st.markdown(
         """
-<div style="background:#e6f2ff; padding:12px; border-radius:8px">
+<div style="background:#e6f2ff; padding:12px; border-radius:8px; color:#000000">
 <b>Aller</b><br>
 Jeudi après 17h30<br>
 Vendredi avant 8h et après 17h30<br>
@@ -97,7 +97,7 @@ Samedi toute la journée
 with col2:
     st.markdown(
         """
-<div style="background:#fff0e6; padding:12px; border-radius:8px">
+<div style="background:#fff0e6; padding:12px; border-radius:8px; color:#000000">
 <b>Retour</b><br>
 Dimanche toute la journée<br>
 Lundi avant 8h et après 17h30<br>
