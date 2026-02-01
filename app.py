@@ -28,17 +28,13 @@ st.markdown("""
     color: #9B1452;  /* rose girly */
 }
 
-/* Colonnes */
+/* Colonnes verticales pour mobile / lisibilité */
 .weekend-columns {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
+    display: block;  /* plus de flex wrap */
+    gap: 12px;
 }
-
-/* Sections aller / retour */
 .section {
-    flex: 1;
-    min-width: 120px;
+    margin-bottom: 12px;
 }
 
 /* Section titre */
@@ -170,12 +166,12 @@ with st.spinner("Récupération des trains..."):
         ref = week_end_ref(date_obj, t["type"]=="retour")
         weekends[ref][t["type"]].append(t)
 
-# -------------------- Affichage week-end distinct --------------------
-# -------------------- Affichage week-end 100% dans la carte --------------------
+# -------------------- Affichage week-end vertical --------------------
 for weekend, trips in sorted(weekends.items()):
-    # Carte complète pour le week-end
     card_html = f"<div class='weekend-card'>"
     card_html += f"<div class='weekend-title'>Week-end du {format_date_fr(weekend.strftime('%Y-%m-%d'))}</div>"
+
+    # Vertical stack au lieu de colonnes
     card_html += "<div class='weekend-columns'>"
 
     # --- ALLER ---
@@ -210,5 +206,5 @@ for weekend, trips in sorted(weekends.items()):
         card_html += "<span class='date-line'>Aucun retour</span>"
     card_html += "</div>"
 
-    card_html += "</div></div>"  # fermeture columns + carte
+    card_html += "</div></div>"  # fermeture weekend-columns + carte
     st.markdown(card_html, unsafe_allow_html=True)
