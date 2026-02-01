@@ -1,3 +1,8 @@
+import streamlit as st
+import requests
+from datetime import datetime, timedelta
+from collections import defaultdict
+
 st.set_page_config(page_title="TGVmax Week-ends", layout="wide")
 
 # -------------------- CSS girly + distinct week-ends --------------------
